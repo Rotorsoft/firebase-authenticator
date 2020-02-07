@@ -1,9 +1,7 @@
 'use strict'
 
 require('dotenv').config()
-const os = require('os')
 
-const hostname = os.hostname
 let cors, admin, app, cache
 
 if (process.env.NODE_ENV === 'development') {
@@ -20,9 +18,11 @@ module.exports = options => {
   if (authorizer && typeof authorizer !== 'function') throw Error('Invalid authorizer in options')
 
   return (req, res, next) => {
-    if (options.trace) console.log(`${hostname} received request from ${req.hostname}`)
+    const origin = req.headers.origin || req.origin
+
+    if (options.trace) console.log(`${req.hostname} received request from ${origin}`)
     
-    if (!cors || req.hostname === hostname) {
+    if (!cors || req.hostname === origin) {
       // skip when developing or request is coming from same host in cloud
       next()
     }
