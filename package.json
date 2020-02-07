@@ -1,6 +1,6 @@
 {
   "name": "@rotorsoft/firebase-authenticator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "ExpressJs Middleware to authenticate Firebase users calling GCP Cloud HTTP Functions",
   "main": "index.js",
   "scripts": {
