@@ -18,9 +18,10 @@ module.exports = options => {
   if (authorizer && typeof authorizer !== 'function') throw Error('Invalid authorizer in options')
 
   return (req, res, next) => {
-    const origin = req.headers.origin || req.origin
+    const origin = req.headers.origin || req.origin || req.headers['x-forwarded-for'] || req.headers['x-appengine-user-ip']
+    const location = `${req.headers['x-appengine-city']}, ${req.headers['x-appengine-region']} ${req.headers['x-appengine-country']}`
 
-    if (options.trace) console.log(`${req.hostname} received request from ${origin}`)
+    if (options.trace) console.log(`${req.hostname} received request from ${origin} ${location}`)
     
     if (!cors || req.hostname === origin) {
       // skip when developing or request is coming from same host in cloud
