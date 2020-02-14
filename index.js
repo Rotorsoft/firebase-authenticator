@@ -18,16 +18,13 @@ module.exports = options => {
   if (authorizer && typeof authorizer !== 'function') throw Error('Invalid authorizer in options')
 
   return (req, res, next) => {
-    const origin = req.headers.origin || req.origin || req.headers['x-forwarded-for'] || req.headers['x-appengine-user-ip']
-    const location = `${req.headers['x-appengine-city']}, ${req.headers['x-appengine-region']} ${req.headers['x-appengine-country']}`
-
-    if (options.trace) console.log(`${req.hostname} received request from ${origin} ${location}`)
-    
-    if (!cors || req.hostname === origin) {
-      // skip when developing or request is coming from same host in cloud
-      next()
-    }
+    if (!cors) next() // skip when developing
     else {
+      if (options.trace) {
+        const origin = req.headers.origin || req.headers['x-forwarded-for'] || req.headers['x-appengine-user-ip']
+        const location = `${req.headers['x-appengine-city']}, ${req.headers['x-appengine-region']} ${req.headers['x-appengine-country']}`
+        console.log(`${req.hostname} received request from ${origin} - ${req.ip} - ${location}`)
+      }
       return cors(options)(req, res, () => {
         const { authorization } = req.headers
 
@@ -40,25 +37,28 @@ module.exports = options => {
           return
         }
 
-        const token = authorization.substr(7)
         app = app || admin.initializeApp()
+        const token = authorization.substr(7)
+        const entry = cache[req.ip]
+        const now = Date.now()
 
-        if (cache[req.ip] === token) {
-          if (options.trace) console.log(`Token for IP ${req.ip} found in cache`)
+        if (entry && entry.token === token && entry.expires > now) {
+          if (options.trace) console.log('Token found in cache')
           next()
         }
         else {
+          delete cache[req.ip]
+
           admin.auth().verifyIdToken(token, true)
             .then(claims => {
-              if (options.trace) console.log(`Token for IP ${req.ip} added to cache with claims ${JSON.stringify(claims)}`)
-              
-              if (authorizer && !authorizer(claims)) {
+              if (authorizer && !authorizer(req, claims)) {
                 res.status(403).send('Request not authorized')
                 return
               }
 
-              // authenticated and authorized
-              cache[req.ip] = token
+              // cache for 1hr when authenticated and authorized
+              cache[req.ip] = { token, expires: now + 60 * 60 * 1000 }
+              if (options.trace) console.log(`Token cached with claims ${JSON.stringify(claims)}`)
               next()
             })
             .catch(() => {
