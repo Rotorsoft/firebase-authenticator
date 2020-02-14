@@ -15,7 +15,7 @@ module.exports = options => {
       if (options.trace) {
         const origin = req.headers.origin || req.headers['x-forwarded-for'] || req.headers['x-appengine-user-ip']
         const location = `${req.headers['x-appengine-city'] || ''} ${req.headers['x-appengine-region'] || ''} ${req.headers['x-appengine-country'] || ''}`
-        console.log(`${req.hostname} received ${req.method} request from ${origin} - ${req.ip} - ${location}`)
+        console.log(`${req.hostname} received ${req.method} ${req.originalUrl} from ${origin} - ${req.ip} - ${location}`)
       }
       
       const { authorization } = req.headers
