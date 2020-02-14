@@ -11,12 +11,13 @@ module.exports = options => {
   if (authorizer && typeof authorizer !== 'function') throw Error('Invalid authorizer in options')
 
   return (req, res, next) => {
-    if (options.trace) {
-      const origin = req.headers.origin || req.headers['x-forwarded-for'] || req.headers['x-appengine-user-ip']
-      const location = `${req.headers['x-appengine-city']}, ${req.headers['x-appengine-region']} ${req.headers['x-appengine-country']}`
-      console.log(`${req.hostname} received request from ${origin} - ${req.ip} - ${location}`)
-    }
     return cors(options)(req, res, () => {
+      if (options.trace) {
+        const origin = req.headers.origin || req.headers['x-forwarded-for'] || req.headers['x-appengine-user-ip']
+        const location = `${req.headers['x-appengine-city'] || ''} ${req.headers['x-appengine-region'] || ''} ${req.headers['x-appengine-country'] || ''}`
+        console.log(`${req.hostname} received ${req.method} request from ${origin} - ${req.ip} - ${location}`)
+      }
+      
       const { authorization } = req.headers
 
       if (!authorization) {
