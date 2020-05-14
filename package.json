@@ -1,6 +1,6 @@
 {
   "name": "@rotorsoft/firebase-authenticator",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "ExpressJs middleware to authenticate Firebase users",
   "main": "index.js",
   "author": " <rotorsoft@outlook.com>",
