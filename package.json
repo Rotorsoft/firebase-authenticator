@@ -1,11 +1,8 @@
 {
   "name": "@rotorsoft/firebase-authenticator",
   "version": "1.0.7",
-  "description": "ExpressJs Middleware to authenticate Firebase users calling GCP Cloud HTTP Functions",
+  "description": "ExpressJs middleware to authenticate Firebase users",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": " <rotorsoft@outlook.com>",
   "license": "ISC",
   "engines": {
@@ -13,8 +10,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
-    "firebase-admin": "^8.9.2"
+    "firebase-admin": "^8.12.1"
   },
   "devDependencies": {},
   "repository": {
