@@ -2,13 +2,13 @@
 
 const cors = require('cors')
 const admin = require('firebase-admin')
-const { NODE_ENV, GOOGLE_APPLICATION_CREDENTIALS, FIREBASE_APP } = process.env
+const { NODE_ENV, FIREBASE_APP, FIREBASE_APP_CREDENTIALS, GOOGLE_APPLICATION_CREDENTIALS } = process.env
 const cache = {}
 let app
 
 module.exports = options => {
-  if (!GOOGLE_APPLICATION_CREDENTIALS) throw Error('Google application credentials not found')
   if (!FIREBASE_APP) throw Error('Firebase app name not found')
+  if (!FIREBASE_APP_CREDENTIALS && !GOOGLE_APPLICATION_CREDENTIALS) throw Error('Firebase or Google application credentials not found')
 
   const { authorizer } = options
   if (authorizer && typeof authorizer !== 'function') throw Error('Invalid authorizer in options')
@@ -35,10 +35,12 @@ module.exports = options => {
       // skip authentication when developing
       if (NODE_ENV === 'development') return next()
 
-      app = app || admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
-        databaseURL: `https://${FIREBASE_APP}.firebaseio.com`
-      })
+      if (!app) {
+        const databaseURL = `https://${FIREBASE_APP}.firebaseio.com`
+        const credential = FIREBASE_APP_CREDENTIALS ? admin.credential.cert(FIREBASE_APP_CREDENTIALS) : admin.credential.applicationDefault()
+        app = admin.initializeApp({ credential, databaseURL })
+      }
+
       const token = authorization.substr(7)
       const entry = cache[req.ip]
       const now = Date.now()
